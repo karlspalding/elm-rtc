@@ -1,0 +1,27 @@
+{
+  "nodes": {
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1654592671,
+        "narHash": "sha256-mRUMKAjCzJz+A9Ch3VutSVc33PvTIA5T9XKmsr+H/Bk=",
+        "ref": "swallsoft",
+        "rev": "dc43a5e627c6c21732697014168b5b205290bf22",
+        "revCount": 337834,
+        "type": "git",
+        "url": "ssh://deploy@repos/srv/repos/nixpkgs.git"
+      },
+      "original": {
+        "ref": "swallsoft",
+        "type": "git",
+        "url": "ssh://deploy@repos/srv/repos/nixpkgs.git"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

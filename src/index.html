@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<html>
+
+  <head>
+    <meta charset="UTF-8">
+    <title>RTC Chat</title>
+    <script type="text/javascript" src="../dist/main.js"></script>
+  </head>
+
+  <body>
+    <div id="app"></div>
+  </body>
+
+  <script type="text/javascript">
+    const app = Elm.Main.init({
+      node: document.getElementById('app')
+    });
+
+    const socket = new WebSocket('ws://localhost:9090');
+
+    app.ports.sendWebSocketMessage.subscribe((message) =>
+      socket.send(message));
+
+    socket.addEventListener('message', async (event) =>
+      app.ports.handleWebSocketMessage.send(await event.data.text()));
+
+    const connection = new RTCPeerConnection({
+      iceServers: [{ urls: ['stun:stun.1.google.com:19302'] }],
+    }, {
+      optional: [{RtpDataChannels: true}],
+    });
+
+    const channel = connection.createDataChannel('broadcast', { reliable: true });
+    channel.onerror = (error) => console.log(error);
+
+    app.ports.handleRemoteWebRTCSignalOffer.subscribe((offer) => {
+      connection.setRemoteDescription(new RTCSessionDescription(offer));
+      connection.createAnswer((answer) => {
+        connection.setLocalDescription(answer);
+        app.ports.handleLocalWebRTCSignalAnswer.send(answer);
+      }, (error) => console.error(error));
+    });
+
+    app.ports.handleRemoteWebRTCSignalAnswer.subscribe((answer) => {
+      connection.setRemoteDescription(new RTCSessionDescription(answer));
+    });
+
+    app.ports.handleRemoteWebRTCSignalCandidate.subscribe((candidate) =>
+      connection.addIceCandidate(new RTCIceCandidate(candidate)));
+
+    connection.onicecandidate = (event) => {
+      if (event.candidate) {
+        app.ports.handleLocalWebRTCSignalCandidate.send(event.candidate);
+      };
+    };
+
+    socket.addEventListener('open', () => {
+      connection.createOffer((offer) => {
+        connection.setLocalDescription(offer);
+        app.ports.handleLocalWebRTCSignalOffer.send(offer);
+      }, (error) => console.error(error));
+    });
+
+  </script>
+
+</html>

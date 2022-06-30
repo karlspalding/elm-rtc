@@ -1,0 +1,4 @@
+*.swp
+elm
+/dist/
+/elm-stuff/
